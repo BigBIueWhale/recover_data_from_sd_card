@@ -993,10 +993,37 @@ static void PrintDriveInfo(const PhysicalDriveInfo& info)
 // Main
 // ============================================================
 
+static bool IsRunningElevated()
+{
+    HANDLE hToken = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+        return false;
+
+    TOKEN_ELEVATION elevation = {};
+    DWORD cbSize = sizeof(TOKEN_ELEVATION);
+    BOOL success = GetTokenInformation(hToken, TokenElevation,
+        &elevation, sizeof(elevation), &cbSize);
+    CloseHandle(hToken);
+
+    return success && elevation.TokenIsElevated != 0;
+}
+
 int wmain()
 {
     printf("SD Card Discovery Tool for Windows\n");
     printf("===================================\n\n");
+
+    if (IsRunningElevated())
+    {
+        printf("Running as: Administrator (elevated)\n");
+    }
+    else
+    {
+        printf("Running as: Standard user (not elevated)\n");
+        printf("  Note: Some queries (e.g. partition layout) may return\n");
+        printf("  limited results. Run as Administrator for full details.\n");
+    }
+    printf("\n");
 
     // Step 1: Gather SetupDi device info for all disk devices
     printf("Enumerating disk device interfaces via SetupDi...\n");
