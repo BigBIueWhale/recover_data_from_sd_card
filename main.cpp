@@ -330,7 +330,7 @@ static void QueryStorageAdapterDescriptor(HANDLE hDevice, DWORD driveIndex, Stor
     }
 
     const auto* desc = reinterpret_cast<const STORAGE_ADAPTER_DESCRIPTOR*>(buffer.get());
-    out.busType = desc->BusType;
+    out.busType = static_cast<STORAGE_BUS_TYPE>(desc->BusType);
     out.maxTransferLength = desc->MaximumTransferLength;
     out.alignmentMask = desc->AlignmentMask;
 }
@@ -387,7 +387,7 @@ static void QueryPartitionLayout(HANDLE hDevice, DWORD driveIndex, PartitionLayo
             &bytesReturned, nullptr))
         {
             const auto* layout = reinterpret_cast<const DRIVE_LAYOUT_INFORMATION_EX*>(buffer.get());
-            out.style = layout->PartitionStyle;
+            out.style = static_cast<PARTITION_STYLE>(layout->PartitionStyle);
 
             if (layout->PartitionStyle == PARTITION_STYLE_MBR)
                 out.mbrSignature = layout->Mbr.Signature;
@@ -704,9 +704,9 @@ static bool ContainsCaseInsensitiveW(const std::wstring& haystack, const wchar_t
     std::wstring lowerHay = haystack;
     std::wstring lowerNeedle = needle;
     std::transform(lowerHay.begin(), lowerHay.end(), lowerHay.begin(),
-        [](wchar_t c) { return static_cast<wchar_t>(std::towlower(c)); });
+        [](wchar_t c) { return static_cast<wchar_t>(towlower(c)); });
     std::transform(lowerNeedle.begin(), lowerNeedle.end(), lowerNeedle.begin(),
-        [](wchar_t c) { return static_cast<wchar_t>(std::towlower(c)); });
+        [](wchar_t c) { return static_cast<wchar_t>(towlower(c)); });
     return lowerHay.find(lowerNeedle) != std::wstring::npos;
 }
 
