@@ -710,43 +710,72 @@ static bool ContainsCaseInsensitiveW(const std::wstring& haystack, const wchar_t
     return lowerHay.find(lowerNeedle) != std::wstring::npos;
 }
 
+// Checks whether device strings or SetupDi properties suggest an SD card reader.
+// Applied to any removable media regardless of bus type, since PCIe card readers
+// (e.g. Realtek RTS5208) report BusTypeScsi, not BusTypeSd.
+static bool LooksLikeSDCardReader(const PhysicalDriveInfo& info)
+{
+    // Product ID / Vendor ID from STORAGE_DEVICE_DESCRIPTOR
+    if (ContainsCaseInsensitive(info.device.productId, "card reader") ||
+        ContainsCaseInsensitive(info.device.productId, "sd/mmc") ||
+        ContainsCaseInsensitive(info.device.productId, "sd card") ||
+        ContainsCaseInsensitive(info.device.productId, "microsd") ||
+        ContainsCaseInsensitive(info.device.productId, "cardreader") ||
+        ContainsCaseInsensitive(info.device.productId, "multi-card") ||
+        ContainsCaseInsensitive(info.device.vendorId, "card reader"))
+    {
+        return true;
+    }
+
+    // Friendly name from SetupDi (e.g. "SDXC Card", "SD Card Reader")
+    if (ContainsCaseInsensitiveW(info.friendlyName, L"SDXC") ||
+        ContainsCaseInsensitiveW(info.friendlyName, L"SDHC") ||
+        ContainsCaseInsensitiveW(info.friendlyName, L"SD Card") ||
+        ContainsCaseInsensitiveW(info.friendlyName, L"MMC Card") ||
+        ContainsCaseInsensitiveW(info.friendlyName, L"microSD"))
+    {
+        return true;
+    }
+
+    // Hardware IDs from SetupDi
+    if (ContainsCaseInsensitiveW(info.hardwareIds, L"SD\\") ||
+        ContainsCaseInsensitiveW(info.hardwareIds, L"SDA\\") ||
+        ContainsCaseInsensitiveW(info.hardwareIds, L"SDMMC\\"))
+    {
+        return true;
+    }
+
+    return false;
+}
+
 static const char* ClassifyDrive(const PhysicalDriveInfo& info)
 {
+    // Definitive: native SD/MMC bus
     if (info.device.busType == BusTypeSd)
         return "SD Card (native SD bus)";
     if (info.device.busType == BusTypeMmc)
         return "MMC Card (native MMC bus)";
 
-    if (info.device.busType == BusTypeUsb && info.device.removableMedia)
+    // For any removable media, check if it looks like a card reader.
+    // PCIe card readers (Realtek, etc.) report BusTypeScsi; USB readers
+    // report BusTypeUsb — the heuristics apply to both.
+    if (info.device.removableMedia)
     {
-        if (ContainsCaseInsensitive(info.device.productId, "card reader") ||
-            ContainsCaseInsensitive(info.device.productId, "sd/mmc") ||
-            ContainsCaseInsensitive(info.device.productId, "sd card") ||
-            ContainsCaseInsensitive(info.device.productId, "microsd") ||
-            ContainsCaseInsensitive(info.device.productId, "cardreader") ||
-            ContainsCaseInsensitive(info.device.productId, "multi-card") ||
-            ContainsCaseInsensitive(info.device.vendorId, "card reader"))
+        if (LooksLikeSDCardReader(info))
         {
-            return "Likely SD Card (USB card reader detected)";
+            return "SD Card (card reader detected)";
         }
 
-        if (ContainsCaseInsensitiveW(info.hardwareIds, L"SD\\") ||
-            ContainsCaseInsensitiveW(info.hardwareIds, L"SDA\\") ||
-            ContainsCaseInsensitiveW(info.hardwareIds, L"SDMMC\\"))
-        {
-            return "Likely SD Card (hardware ID match)";
-        }
+        if (info.device.busType == BusTypeUsb)
+            return "USB Removable Media (could be SD in USB reader)";
 
-        return "USB Removable Media (could be SD in USB reader)";
+        return "Removable Media";
     }
 
-    if (info.device.busType == BusTypeUsb && !info.device.removableMedia)
+    if (info.device.busType == BusTypeUsb)
         return "USB Fixed Disk";
 
-    if (!info.device.removableMedia)
-        return "Fixed Disk";
-
-    return "Removable Media";
+    return "Fixed Disk";
 }
 
 // ============================================================
@@ -1065,9 +1094,8 @@ int wmain()
         info.isSDCandidate =
             info.device.busType == BusTypeSd ||
             info.device.busType == BusTypeMmc ||
-            (info.device.busType == BusTypeUsb && info.device.removableMedia) ||
-            ContainsCaseInsensitiveW(info.hardwareIds, L"SD\\") ||
-            ContainsCaseInsensitiveW(info.hardwareIds, L"SDMMC\\");
+            (info.device.removableMedia && LooksLikeSDCardReader(info)) ||
+            (info.device.busType == BusTypeUsb && info.device.removableMedia);
 
         drives.push_back(std::move(info));
     }
