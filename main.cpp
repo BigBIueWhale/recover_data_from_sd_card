@@ -222,6 +222,21 @@ struct OurTemperatureDataDescriptor {
 };
 
 // ============================================================
+// Error handling
+// ============================================================
+
+// Error codes that mean "this property/IOCTL is not supported by the driver."
+// ERROR_INVALID_FUNCTION (1): STATUS_INVALID_DEVICE_REQUEST or STATUS_NOT_IMPLEMENTED
+// ERROR_NOT_SUPPORTED (50): STATUS_NOT_SUPPORTED
+// ERROR_INVALID_PARAMETER (87): Invalid PropertyId on older Windows versions
+static bool IsNotSupportedError(DWORD err)
+{
+    return err == ERROR_INVALID_FUNCTION
+        || err == ERROR_NOT_SUPPORTED
+        || err == ERROR_INVALID_PARAMETER;
+}
+
+// ============================================================
 // Fatal error reporting
 // ============================================================
 
@@ -561,7 +576,17 @@ struct PhysicalDriveInfo {
     DWORD removalPolicy = 0;
     bool isSDCandidate = false;
 
-    // Storage property queries
+    // Storage property queries (optional — may not be supported by all drivers)
+    bool hasWriteCache = false;
+    bool hasAccessAlignment = false;
+    bool hasSeekPenalty = false;
+    bool hasTrim = false;
+    bool hasPower = false;
+    bool hasMediumProductType = false;
+    bool hasIoCapability = false;
+    bool hasDeviceTemperature = false;
+    bool hasAdapterTemperature = false;
+    bool hasMediaTypesEx = false;
     WriteCacheInfo writeCache;
     AccessAlignmentInfo accessAlignment;
     SeekPenaltyInfo seekPenalty;
@@ -960,270 +985,11 @@ static void QueryPartitionLayout(HANDLE hDevice, DWORD driveIndex, PartitionLayo
 // Additional storage property queries
 // ============================================================
 
-static void QueryWriteCacheProperty(HANDLE hDevice, DWORD driveIndex, WriteCacheInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageDeviceWriteCacheProperty;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (WriteCacheProperty header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (WriteCacheProperty) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* prop = reinterpret_cast<const OurWriteCacheProperty*>(buffer.get());
-    out.writeCacheType = prop->WriteCacheType;
-    out.writeCacheEnabled = prop->WriteCacheEnabled;
-    out.writeCacheChangeable = prop->WriteCacheChangeable;
-    out.writeThroughSupported = prop->WriteThroughSupported;
-    out.flushCacheSupported = prop->FlushCacheSupported;
-    out.userDefinedPowerProtection = prop->UserDefinedPowerProtection;
-    out.nvCacheEnabled = prop->NVCacheEnabled;
-}
-
-static void QueryAccessAlignmentProperty(HANDLE hDevice, DWORD driveIndex, AccessAlignmentInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageAccessAlignmentProperty;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (AccessAlignmentProperty header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (AccessAlignmentProperty) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* desc = reinterpret_cast<const OurAccessAlignmentDescriptor*>(buffer.get());
-    out.bytesPerCacheLine = desc->BytesPerCacheLine;
-    out.bytesOffsetForCacheAlignment = desc->BytesOffsetForCacheAlignment;
-    out.bytesPerLogicalSector = desc->BytesPerLogicalSector;
-    out.bytesPerPhysicalSector = desc->BytesPerPhysicalSector;
-    out.bytesOffsetForSectorAlignment = desc->BytesOffsetForSectorAlignment;
-}
-
-static void QuerySeekPenaltyProperty(HANDLE hDevice, DWORD driveIndex, SeekPenaltyInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageDeviceSeekPenaltyProperty;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (SeekPenaltyProperty header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (SeekPenaltyProperty) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* desc = reinterpret_cast<const OurSeekPenaltyDescriptor*>(buffer.get());
-    out.incursSeekPenalty = desc->IncursSeekPenalty;
-}
-
-static void QueryTrimProperty(HANDLE hDevice, DWORD driveIndex, TrimInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageDeviceTrimProperty;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (TrimProperty header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (TrimProperty) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* desc = reinterpret_cast<const OurTrimDescriptor*>(buffer.get());
-    out.trimEnabled = desc->TrimEnabled;
-}
-
-static void QueryDevicePowerProperty(HANDLE hDevice, DWORD driveIndex, DevicePowerInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageDevicePowerProperty;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (DevicePowerProperty header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (DevicePowerProperty) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* desc = reinterpret_cast<const OurPowerDescriptor*>(buffer.get());
-    out.deviceAttentionSupported = desc->DeviceAttentionSupported;
-    out.asyncNotificationSupported = desc->AsynchronousNotificationSupported;
-    out.idlePowerManagementEnabled = desc->IdlePowerManagementEnabled;
-    out.d3ColdEnabled = desc->D3ColdEnabled;
-    out.d3ColdSupported = desc->D3ColdSupported;
-    out.noVerifyDuringIdlePower = desc->NoVerifyDuringIdlePower;
-    out.idleTimeoutInMS = desc->IdleTimeoutInMS;
-}
-
-static void QueryMediumProductType(HANDLE hDevice, DWORD driveIndex, MediumProductTypeInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageDeviceMediumProductType;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (MediumProductType header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (MediumProductType) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* desc = reinterpret_cast<const OurMediumProductTypeDescriptor*>(buffer.get());
-    out.mediumProductType = desc->MediumProductType;
-}
-
-static void QueryIoCapabilityProperty(HANDLE hDevice, DWORD driveIndex, IoCapabilityInfo& out)
-{
-    STORAGE_PROPERTY_QUERY query = {};
-    query.PropertyId = StorageDeviceIoCapabilityProperty;
-    query.QueryType = PropertyStandardQuery;
-
-    StoragePropertyHeaderBuffer _hdrBuf = {};
-    auto& header = _hdrBuf.header;
-    DWORD bytesReturned = 0;
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (IoCapabilityProperty header) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const DWORD bufSize = header.Size;
-    auto buffer = std::make_unique<BYTE[]>(bufSize);
-    memset(buffer.get(), 0, bufSize);
-
-    if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), buffer.get(), bufSize,
-        &bytesReturned, nullptr))
-    {
-        char msg[256];
-        sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (IoCapabilityProperty) failed on PhysicalDrive%lu", driveIndex);
-        FatalError(msg);
-    }
-
-    const auto* desc = reinterpret_cast<const OurIoCapabilityDescriptor*>(buffer.get());
-    out.lunMaxIoCount = desc->LunMaxIoCount;
-    out.adapterMaxIoCount = desc->AdapterMaxIoCount;
-}
-
-static void QueryTemperatureProperty(HANDLE hDevice, DWORD driveIndex,
-    STORAGE_PROPERTY_ID propId, const char* propName, TemperatureInfo& out)
+// Helper: two-pass storage property query that returns false if unsupported.
+// On not-supported errors (1, 50, 87), returns false. On other errors, calls FatalError.
+static bool QueryOptionalStorageProperty(HANDLE hDevice, DWORD driveIndex,
+    STORAGE_PROPERTY_ID propId, const char* propName,
+    std::unique_ptr<BYTE[]>& outBuffer, DWORD& outSize)
 {
     STORAGE_PROPERTY_QUERY query = {};
     query.PropertyId = propId;
@@ -1236,12 +1002,17 @@ static void QueryTemperatureProperty(HANDLE hDevice, DWORD driveIndex,
         &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
+        if (IsNotSupportedError(GetLastError()))
+            return false;
         char msg[256];
         sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (%s header) failed on PhysicalDrive%lu", propName, driveIndex);
         FatalError(msg);
     }
 
     const DWORD bufSize = header.Size;
+    if (bufSize == 0)
+        return false;
+
     auto buffer = std::make_unique<BYTE[]>(bufSize);
     memset(buffer.get(), 0, bufSize);
 
@@ -1249,10 +1020,134 @@ static void QueryTemperatureProperty(HANDLE hDevice, DWORD driveIndex,
         &query, sizeof(query), buffer.get(), bufSize,
         &bytesReturned, nullptr))
     {
+        if (IsNotSupportedError(GetLastError()))
+            return false;
         char msg[256];
         sprintf_s(msg, "IOCTL_STORAGE_QUERY_PROPERTY (%s) failed on PhysicalDrive%lu", propName, driveIndex);
         FatalError(msg);
     }
+
+    outBuffer = std::move(buffer);
+    outSize = bufSize;
+    return true;
+}
+
+static bool QueryWriteCacheProperty(HANDLE hDevice, DWORD driveIndex, WriteCacheInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageDeviceWriteCacheProperty, "WriteCacheProperty", buffer, bufSize))
+        return false;
+
+    const auto* prop = reinterpret_cast<const OurWriteCacheProperty*>(buffer.get());
+    out.writeCacheType = prop->WriteCacheType;
+    out.writeCacheEnabled = prop->WriteCacheEnabled;
+    out.writeCacheChangeable = prop->WriteCacheChangeable;
+    out.writeThroughSupported = prop->WriteThroughSupported;
+    out.flushCacheSupported = prop->FlushCacheSupported;
+    out.userDefinedPowerProtection = prop->UserDefinedPowerProtection;
+    out.nvCacheEnabled = prop->NVCacheEnabled;
+    return true;
+}
+
+static bool QueryAccessAlignmentProperty(HANDLE hDevice, DWORD driveIndex, AccessAlignmentInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageAccessAlignmentProperty, "AccessAlignmentProperty", buffer, bufSize))
+        return false;
+
+    const auto* desc = reinterpret_cast<const OurAccessAlignmentDescriptor*>(buffer.get());
+    out.bytesPerCacheLine = desc->BytesPerCacheLine;
+    out.bytesOffsetForCacheAlignment = desc->BytesOffsetForCacheAlignment;
+    out.bytesPerLogicalSector = desc->BytesPerLogicalSector;
+    out.bytesPerPhysicalSector = desc->BytesPerPhysicalSector;
+    out.bytesOffsetForSectorAlignment = desc->BytesOffsetForSectorAlignment;
+    return true;
+}
+
+static bool QuerySeekPenaltyProperty(HANDLE hDevice, DWORD driveIndex, SeekPenaltyInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageDeviceSeekPenaltyProperty, "SeekPenaltyProperty", buffer, bufSize))
+        return false;
+
+    const auto* desc = reinterpret_cast<const OurSeekPenaltyDescriptor*>(buffer.get());
+    out.incursSeekPenalty = desc->IncursSeekPenalty;
+    return true;
+}
+
+static bool QueryTrimProperty(HANDLE hDevice, DWORD driveIndex, TrimInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageDeviceTrimProperty, "TrimProperty", buffer, bufSize))
+        return false;
+
+    const auto* desc = reinterpret_cast<const OurTrimDescriptor*>(buffer.get());
+    out.trimEnabled = desc->TrimEnabled;
+    return true;
+}
+
+static bool QueryDevicePowerProperty(HANDLE hDevice, DWORD driveIndex, DevicePowerInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageDevicePowerProperty, "DevicePowerProperty", buffer, bufSize))
+        return false;
+
+    const auto* desc = reinterpret_cast<const OurPowerDescriptor*>(buffer.get());
+    out.deviceAttentionSupported = desc->DeviceAttentionSupported;
+    out.asyncNotificationSupported = desc->AsynchronousNotificationSupported;
+    out.idlePowerManagementEnabled = desc->IdlePowerManagementEnabled;
+    out.d3ColdEnabled = desc->D3ColdEnabled;
+    out.d3ColdSupported = desc->D3ColdSupported;
+    out.noVerifyDuringIdlePower = desc->NoVerifyDuringIdlePower;
+    out.idleTimeoutInMS = desc->IdleTimeoutInMS;
+    return true;
+}
+
+static bool QueryMediumProductType(HANDLE hDevice, DWORD driveIndex, MediumProductTypeInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageDeviceMediumProductType, "MediumProductType", buffer, bufSize))
+        return false;
+
+    const auto* desc = reinterpret_cast<const OurMediumProductTypeDescriptor*>(buffer.get());
+    out.mediumProductType = desc->MediumProductType;
+    return true;
+}
+
+static bool QueryIoCapabilityProperty(HANDLE hDevice, DWORD driveIndex, IoCapabilityInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        StorageDeviceIoCapabilityProperty, "IoCapabilityProperty", buffer, bufSize))
+        return false;
+
+    const auto* desc = reinterpret_cast<const OurIoCapabilityDescriptor*>(buffer.get());
+    out.lunMaxIoCount = desc->LunMaxIoCount;
+    out.adapterMaxIoCount = desc->AdapterMaxIoCount;
+    return true;
+}
+
+static bool QueryTemperatureProperty(HANDLE hDevice, DWORD driveIndex,
+    STORAGE_PROPERTY_ID propId, const char* propName, TemperatureInfo& out)
+{
+    std::unique_ptr<BYTE[]> buffer;
+    DWORD bufSize = 0;
+    if (!QueryOptionalStorageProperty(hDevice, driveIndex,
+        propId, propName, buffer, bufSize))
+        return false;
 
     const auto* desc = reinterpret_cast<const OurTemperatureDataDescriptor*>(buffer.get());
     out.criticalTemperature = desc->CriticalTemperature;
@@ -1272,21 +1167,22 @@ static void QueryTemperatureProperty(HANDLE hDevice, DWORD driveIndex,
         si.underThreshold = ti->UnderThreshold;
         out.sensors.push_back(si);
     }
+    return true;
 }
 
-static void QueryDeviceTemperature(HANDLE hDevice, DWORD driveIndex, TemperatureInfo& out)
+static bool QueryDeviceTemperature(HANDLE hDevice, DWORD driveIndex, TemperatureInfo& out)
 {
-    QueryTemperatureProperty(hDevice, driveIndex,
+    return QueryTemperatureProperty(hDevice, driveIndex,
         StorageDeviceTemperatureProperty, "DeviceTemperature", out);
 }
 
-static void QueryAdapterTemperature(HANDLE hDevice, DWORD driveIndex, TemperatureInfo& out)
+static bool QueryAdapterTemperature(HANDLE hDevice, DWORD driveIndex, TemperatureInfo& out)
 {
-    QueryTemperatureProperty(hDevice, driveIndex,
+    return QueryTemperatureProperty(hDevice, driveIndex,
         StorageAdapterTemperatureProperty, "AdapterTemperature", out);
 }
 
-static void QueryMediaTypesEx(HANDLE hDevice, DWORD driveIndex, MediaTypeExInfo& out)
+static bool QueryMediaTypesEx(HANDLE hDevice, DWORD driveIndex, MediaTypeExInfo& out)
 {
     DWORD bufSize = 4096;
     for (int attempt = 0; attempt < 5; ++attempt)
@@ -1315,22 +1211,23 @@ static void QueryMediaTypesEx(HANDLE hDevice, DWORD driveIndex, MediaTypeExInfo&
                 entry.numberMediaSides = mi.DeviceSpecific.DiskInfo.NumberMediaSides;
                 out.entries.push_back(entry);
             }
-            return;
+            return true;
         }
 
-        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        DWORD err = GetLastError();
+        if (err == ERROR_INSUFFICIENT_BUFFER)
         {
-            char msg[256];
-            sprintf_s(msg, "IOCTL_STORAGE_GET_MEDIA_TYPES_EX failed on PhysicalDrive%lu", driveIndex);
-            FatalError(msg);
+            bufSize *= 2;
+            continue;
         }
+        if (IsNotSupportedError(err))
+            return false;
 
-        bufSize *= 2;
+        char msg[256];
+        sprintf_s(msg, "IOCTL_STORAGE_GET_MEDIA_TYPES_EX failed on PhysicalDrive%lu", driveIndex);
+        FatalError(msg);
     }
-
-    char msg[256];
-    sprintf_s(msg, "IOCTL_STORAGE_GET_MEDIA_TYPES_EX: buffer too small after 5 attempts on PhysicalDrive%lu", driveIndex);
-    FatalErrorMsg(msg);
+    return false;
 }
 
 // ============================================================
@@ -2162,94 +2059,124 @@ static void PrintDriveInfo(const PhysicalDriveInfo& info)
     }
 
     // Write Cache
-    printf("\n  --- Write Cache ---\n");
-    printf("  Cache Type:          %s (%lu)\n",
-        WriteCacheTypeName(info.writeCache.writeCacheType), info.writeCache.writeCacheType);
-    printf("  Cache Enabled:       %s (%lu)\n",
-        WriteCacheEnabledName(info.writeCache.writeCacheEnabled), info.writeCache.writeCacheEnabled);
-    printf("  Cache Changeable:    %s (%lu)\n",
-        WriteCacheChangeName(info.writeCache.writeCacheChangeable), info.writeCache.writeCacheChangeable);
-    printf("  Write-Through:       %s (%lu)\n",
-        WriteThroughName(info.writeCache.writeThroughSupported), info.writeCache.writeThroughSupported);
-    printf("  Flush Supported:     %s\n", info.writeCache.flushCacheSupported ? "Yes" : "No");
-    printf("  User Power Protect:  %s\n", info.writeCache.userDefinedPowerProtection ? "Yes" : "No");
-    printf("  NV Cache:            %s\n", info.writeCache.nvCacheEnabled ? "Yes" : "No");
+    if (info.hasWriteCache)
+    {
+        printf("\n  --- Write Cache ---\n");
+        printf("  Cache Type:          %s (%lu)\n",
+            WriteCacheTypeName(info.writeCache.writeCacheType), info.writeCache.writeCacheType);
+        printf("  Cache Enabled:       %s (%lu)\n",
+            WriteCacheEnabledName(info.writeCache.writeCacheEnabled), info.writeCache.writeCacheEnabled);
+        printf("  Cache Changeable:    %s (%lu)\n",
+            WriteCacheChangeName(info.writeCache.writeCacheChangeable), info.writeCache.writeCacheChangeable);
+        printf("  Write-Through:       %s (%lu)\n",
+            WriteThroughName(info.writeCache.writeThroughSupported), info.writeCache.writeThroughSupported);
+        printf("  Flush Supported:     %s\n", info.writeCache.flushCacheSupported ? "Yes" : "No");
+        printf("  User Power Protect:  %s\n", info.writeCache.userDefinedPowerProtection ? "Yes" : "No");
+        printf("  NV Cache:            %s\n", info.writeCache.nvCacheEnabled ? "Yes" : "No");
+    }
 
     // Access Alignment
-    printf("\n  --- Access Alignment ---\n");
-    printf("  Bytes/Logical Sector:    %lu\n", info.accessAlignment.bytesPerLogicalSector);
-    printf("  Bytes/Physical Sector:   %lu\n", info.accessAlignment.bytesPerPhysicalSector);
-    printf("  Sector Alignment Offset: %lu\n", info.accessAlignment.bytesOffsetForSectorAlignment);
-    printf("  Cache Line Size:         %lu\n", info.accessAlignment.bytesPerCacheLine);
-    printf("  Cache Alignment Offset:  %lu\n", info.accessAlignment.bytesOffsetForCacheAlignment);
+    if (info.hasAccessAlignment)
+    {
+        printf("\n  --- Access Alignment ---\n");
+        printf("  Bytes/Logical Sector:    %lu\n", info.accessAlignment.bytesPerLogicalSector);
+        printf("  Bytes/Physical Sector:   %lu\n", info.accessAlignment.bytesPerPhysicalSector);
+        printf("  Sector Alignment Offset: %lu\n", info.accessAlignment.bytesOffsetForSectorAlignment);
+        printf("  Cache Line Size:         %lu\n", info.accessAlignment.bytesPerCacheLine);
+        printf("  Cache Alignment Offset:  %lu\n", info.accessAlignment.bytesOffsetForCacheAlignment);
+    }
 
     // Seek Penalty
-    printf("\n  --- Seek Penalty ---\n");
-    printf("  Incurs Seek Penalty: %s\n", info.seekPenalty.incursSeekPenalty ? "Yes" : "No");
+    if (info.hasSeekPenalty)
+    {
+        printf("\n  --- Seek Penalty ---\n");
+        printf("  Incurs Seek Penalty: %s\n", info.seekPenalty.incursSeekPenalty ? "Yes" : "No");
+    }
 
     // TRIM
-    printf("\n  --- TRIM Support ---\n");
-    printf("  TRIM Enabled:        %s\n", info.trim.trimEnabled ? "Yes" : "No");
+    if (info.hasTrim)
+    {
+        printf("\n  --- TRIM Support ---\n");
+        printf("  TRIM Enabled:        %s\n", info.trim.trimEnabled ? "Yes" : "No");
+    }
 
     // Device Power
-    printf("\n  --- Device Power ---\n");
-    printf("  Attention Supported:     %s\n", info.power.deviceAttentionSupported ? "Yes" : "No");
-    printf("  Async Notification:      %s\n", info.power.asyncNotificationSupported ? "Yes" : "No");
-    printf("  Idle Power Mgmt:         %s\n", info.power.idlePowerManagementEnabled ? "Yes" : "No");
-    printf("  D3Cold Enabled:          %s\n", info.power.d3ColdEnabled ? "Yes" : "No");
-    printf("  D3Cold Supported:        %s\n", info.power.d3ColdSupported ? "Yes" : "No");
-    printf("  No Verify During Idle:   %s\n", info.power.noVerifyDuringIdlePower ? "Yes" : "No");
-    printf("  Idle Timeout:            %lu ms\n", info.power.idleTimeoutInMS);
+    if (info.hasPower)
+    {
+        printf("\n  --- Device Power ---\n");
+        printf("  Attention Supported:     %s\n", info.power.deviceAttentionSupported ? "Yes" : "No");
+        printf("  Async Notification:      %s\n", info.power.asyncNotificationSupported ? "Yes" : "No");
+        printf("  Idle Power Mgmt:         %s\n", info.power.idlePowerManagementEnabled ? "Yes" : "No");
+        printf("  D3Cold Enabled:          %s\n", info.power.d3ColdEnabled ? "Yes" : "No");
+        printf("  D3Cold Supported:        %s\n", info.power.d3ColdSupported ? "Yes" : "No");
+        printf("  No Verify During Idle:   %s\n", info.power.noVerifyDuringIdlePower ? "Yes" : "No");
+        printf("  Idle Timeout:            %lu ms\n", info.power.idleTimeoutInMS);
+    }
 
     // Medium Product Type
-    printf("\n  --- Medium Product Type ---\n");
-    printf("  Product Type:        %s (0x%02lX)\n",
-        MediumProductTypeName(info.mediumProductType.mediumProductType),
-        info.mediumProductType.mediumProductType);
+    if (info.hasMediumProductType)
+    {
+        printf("\n  --- Medium Product Type ---\n");
+        printf("  Product Type:        %s (0x%02lX)\n",
+            MediumProductTypeName(info.mediumProductType.mediumProductType),
+            info.mediumProductType.mediumProductType);
+    }
 
     // I/O Capability
-    printf("\n  --- I/O Capability ---\n");
-    printf("  LUN Max I/O Count:   %lu\n", info.ioCapability.lunMaxIoCount);
-    printf("  Adapter Max I/O:     %lu\n", info.ioCapability.adapterMaxIoCount);
+    if (info.hasIoCapability)
+    {
+        printf("\n  --- I/O Capability ---\n");
+        printf("  LUN Max I/O Count:   %lu\n", info.ioCapability.lunMaxIoCount);
+        printf("  Adapter Max I/O:     %lu\n", info.ioCapability.adapterMaxIoCount);
+    }
 
     // Device Temperature
-    printf("\n  --- Device Temperature ---\n");
-    printf("  Critical Temp:       %d C\n", info.deviceTemperature.criticalTemperature);
-    printf("  Warning Temp:        %d C\n", info.deviceTemperature.warningTemperature);
-    for (const auto& s : info.deviceTemperature.sensors)
-        printf("  Sensor %u:            %d C (over: %d C, under: %d C)\n",
-            s.index, s.temperature, s.overThreshold, s.underThreshold);
+    if (info.hasDeviceTemperature)
+    {
+        printf("\n  --- Device Temperature ---\n");
+        printf("  Critical Temp:       %d C\n", info.deviceTemperature.criticalTemperature);
+        printf("  Warning Temp:        %d C\n", info.deviceTemperature.warningTemperature);
+        for (const auto& s : info.deviceTemperature.sensors)
+            printf("  Sensor %u:            %d C (over: %d C, under: %d C)\n",
+                s.index, s.temperature, s.overThreshold, s.underThreshold);
+    }
 
     // Adapter Temperature
-    printf("\n  --- Adapter Temperature ---\n");
-    printf("  Critical Temp:       %d C\n", info.adapterTemperature.criticalTemperature);
-    printf("  Warning Temp:        %d C\n", info.adapterTemperature.warningTemperature);
-    for (const auto& s : info.adapterTemperature.sensors)
-        printf("  Sensor %u:            %d C (over: %d C, under: %d C)\n",
-            s.index, s.temperature, s.overThreshold, s.underThreshold);
+    if (info.hasAdapterTemperature)
+    {
+        printf("\n  --- Adapter Temperature ---\n");
+        printf("  Critical Temp:       %d C\n", info.adapterTemperature.criticalTemperature);
+        printf("  Warning Temp:        %d C\n", info.adapterTemperature.warningTemperature);
+        for (const auto& s : info.adapterTemperature.sensors)
+            printf("  Sensor %u:            %d C (over: %d C, under: %d C)\n",
+                s.index, s.temperature, s.overThreshold, s.underThreshold);
+    }
 
     // Media Types (Extended)
-    printf("\n  --- Media Types (Extended) ---\n");
-    printf("  Device Type:         0x%08lX\n", info.mediaTypesEx.deviceType);
-    if (info.mediaTypesEx.entries.empty())
+    if (info.hasMediaTypesEx)
     {
-        printf("  (No media entries)\n");
-    }
-    else
-    {
-        int mIdx = 1;
-        for (const auto& me : info.mediaTypesEx.entries)
+        printf("\n  --- Media Types (Extended) ---\n");
+        printf("  Device Type:         0x%08lX\n", info.mediaTypesEx.deviceType);
+        if (info.mediaTypesEx.entries.empty())
         {
-            char charBuf[256];
-            FormatMediaCharacteristics(me.mediaCharacteristics, charBuf, sizeof(charBuf));
-            printf("  Media #%d:\n", mIdx++);
-            printf("    Media Type:        0x%08lX\n", me.mediaType);
-            printf("    Characteristics:   %s\n", charBuf);
-            printf("    Cylinders:         %lld\n", me.cylinders.QuadPart);
-            printf("    Tracks/Cylinder:   %lu\n", me.tracksPerCylinder);
-            printf("    Sectors/Track:     %lu\n", me.sectorsPerTrack);
-            printf("    Bytes/Sector:      %lu\n", me.bytesPerSector);
-            printf("    Sides:             %lu\n", me.numberMediaSides);
+            printf("  (No media entries)\n");
+        }
+        else
+        {
+            int mIdx = 1;
+            for (const auto& me : info.mediaTypesEx.entries)
+            {
+                char charBuf[256];
+                FormatMediaCharacteristics(me.mediaCharacteristics, charBuf, sizeof(charBuf));
+                printf("  Media #%d:\n", mIdx++);
+                printf("    Media Type:        0x%08lX\n", me.mediaType);
+                printf("    Characteristics:   %s\n", charBuf);
+                printf("    Cylinders:         %lld\n", me.cylinders.QuadPart);
+                printf("    Tracks/Cylinder:   %lu\n", me.tracksPerCylinder);
+                printf("    Sectors/Track:     %lu\n", me.sectorsPerTrack);
+                printf("    Bytes/Sector:      %lu\n", me.bytesPerSector);
+                printf("    Sides:             %lu\n", me.numberMediaSides);
+            }
         }
     }
 
@@ -2488,16 +2415,16 @@ int wmain()
         QueryDiskGeometry(hDrive.get(), i, info.geometry);
         QueryPartitionLayout(hDrive.get(), i, info.partitions);
 
-        QueryWriteCacheProperty(hDrive.get(), i, info.writeCache);
-        QueryAccessAlignmentProperty(hDrive.get(), i, info.accessAlignment);
-        QuerySeekPenaltyProperty(hDrive.get(), i, info.seekPenalty);
-        QueryTrimProperty(hDrive.get(), i, info.trim);
-        QueryDevicePowerProperty(hDrive.get(), i, info.power);
-        QueryMediumProductType(hDrive.get(), i, info.mediumProductType);
-        QueryIoCapabilityProperty(hDrive.get(), i, info.ioCapability);
-        QueryDeviceTemperature(hDrive.get(), i, info.deviceTemperature);
-        QueryAdapterTemperature(hDrive.get(), i, info.adapterTemperature);
-        QueryMediaTypesEx(hDrive.get(), i, info.mediaTypesEx);
+        info.hasWriteCache = QueryWriteCacheProperty(hDrive.get(), i, info.writeCache);
+        info.hasAccessAlignment = QueryAccessAlignmentProperty(hDrive.get(), i, info.accessAlignment);
+        info.hasSeekPenalty = QuerySeekPenaltyProperty(hDrive.get(), i, info.seekPenalty);
+        info.hasTrim = QueryTrimProperty(hDrive.get(), i, info.trim);
+        info.hasPower = QueryDevicePowerProperty(hDrive.get(), i, info.power);
+        info.hasMediumProductType = QueryMediumProductType(hDrive.get(), i, info.mediumProductType);
+        info.hasIoCapability = QueryIoCapabilityProperty(hDrive.get(), i, info.ioCapability);
+        info.hasDeviceTemperature = QueryDeviceTemperature(hDrive.get(), i, info.deviceTemperature);
+        info.hasAdapterTemperature = QueryAdapterTemperature(hDrive.get(), i, info.adapterTemperature);
+        info.hasMediaTypesEx = QueryMediaTypesEx(hDrive.get(), i, info.mediaTypesEx);
 
         // Match SetupDi info by device number
         for (const auto& sdi : setupDiDevices)
