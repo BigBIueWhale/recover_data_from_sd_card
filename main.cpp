@@ -127,6 +127,14 @@ typedef struct _SDCMD_DESCRIPTOR {
 #define StorageDeviceTemperatureProperty ((STORAGE_PROPERTY_ID)52)
 #endif
 
+// Padded header buffer for storage property header queries.
+// Some drivers (e.g. Realtek RTS5208) write more than sizeof(STORAGE_DESCRIPTOR_HEADER)
+// during the header pass, corrupting the stack if the buffer is only 8 bytes.
+struct StoragePropertyHeaderBuffer {
+    STORAGE_DESCRIPTOR_HEADER header;
+    BYTE _padding[248]; // Total: 256 bytes
+};
+
 // ============================================================
 // Descriptor structs (custom names to avoid SDK conflicts)
 // ============================================================
@@ -757,10 +765,11 @@ static void QueryStorageDeviceDescriptor(HANDLE hDevice, DWORD driveIndex, Stora
     query.PropertyId = StorageDeviceProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -805,10 +814,11 @@ static void QueryStorageAdapterDescriptor(HANDLE hDevice, DWORD driveIndex, Stor
     query.PropertyId = StorageAdapterProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -956,10 +966,11 @@ static void QueryWriteCacheProperty(HANDLE hDevice, DWORD driveIndex, WriteCache
     query.PropertyId = StorageDeviceWriteCacheProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -996,10 +1007,11 @@ static void QueryAccessAlignmentProperty(HANDLE hDevice, DWORD driveIndex, Acces
     query.PropertyId = StorageAccessAlignmentProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -1034,10 +1046,11 @@ static void QuerySeekPenaltyProperty(HANDLE hDevice, DWORD driveIndex, SeekPenal
     query.PropertyId = StorageDeviceSeekPenaltyProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -1068,10 +1081,11 @@ static void QueryTrimProperty(HANDLE hDevice, DWORD driveIndex, TrimInfo& out)
     query.PropertyId = StorageDeviceTrimProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -1102,10 +1116,11 @@ static void QueryDevicePowerProperty(HANDLE hDevice, DWORD driveIndex, DevicePow
     query.PropertyId = StorageDevicePowerProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -1142,10 +1157,11 @@ static void QueryMediumProductType(HANDLE hDevice, DWORD driveIndex, MediumProdu
     query.PropertyId = StorageDeviceMediumProductType;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -1176,10 +1192,11 @@ static void QueryIoCapabilityProperty(HANDLE hDevice, DWORD driveIndex, IoCapabi
     query.PropertyId = StorageDeviceIoCapabilityProperty;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
@@ -1212,10 +1229,11 @@ static void QueryTemperatureProperty(HANDLE hDevice, DWORD driveIndex,
     query.PropertyId = propId;
     query.QueryType = PropertyStandardQuery;
 
-    STORAGE_DESCRIPTOR_HEADER header = {};
+    StoragePropertyHeaderBuffer _hdrBuf = {};
+    auto& header = _hdrBuf.header;
     DWORD bytesReturned = 0;
     if (!DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY,
-        &query, sizeof(query), &header, sizeof(header),
+        &query, sizeof(query), &_hdrBuf, sizeof(_hdrBuf),
         &bytesReturned, nullptr))
     {
         char msg[256];
