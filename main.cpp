@@ -1285,7 +1285,9 @@ static void SendSDCommand(
     }
 }
 
-static void QuerySD_Protocol(HANDLE hVolume, GUID& outGUID)
+// Returns true if the driver supports SFFDISK IOCTLs, false otherwise.
+// When false, errorCode is set to the Win32 error for diagnostic display.
+static bool QuerySD_Protocol(HANDLE hVolume, GUID& outGUID, DWORD& errorCode)
 {
     SFFDISK_QUERY_DEVICE_PROTOCOL_DATA protData = {};
     protData.Size = sizeof(protData);
@@ -1296,10 +1298,13 @@ static void QuerySD_Protocol(HANDLE hVolume, GUID& outGUID)
         &protData, sizeof(protData),
         &bytesReturned, nullptr))
     {
-        FatalError("IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL failed");
+        errorCode = GetLastError();
+        return false;
     }
 
     outGUID = protData.ProtocolGUID;
+    errorCode = 0;
+    return true;
 }
 
 static void QuerySD_CID(HANDLE hVolume, BYTE outRaw[16])
@@ -2477,8 +2482,61 @@ int wmain()
         if (!hVol.valid())
             FatalError("Failed to open volume for SFFDISK commands");
 
-        // Query protocol
-        QuerySD_Protocol(hVol.get(), drive.sdProtocolGUID);
+        // Probe whether the driver supports SFFDISK IOCTLs at all.
+        // These IOCTLs are only implemented by the Microsoft SD bus driver
+        // stack (sdbus.sys + sffdisk.sys + sffp_sd.sys), which is loaded when
+        // the host controller is an SDA-standard-compliant SD host (BusTypeSd).
+        //
+        // PCIe card readers (Realtek RtsPer.sys, Alcor, etc.) use their own
+        // monolithic driver that presents the SD card as a SCSI device
+        // (BusTypeScsi). These drivers do not implement the SFFDISK interface,
+        // so the IOCTLs fail with ERROR_GEN_FAILURE (31) or similar.
+        //
+        // USB card readers (usbstor.sys) translate SD commands to SCSI/USB
+        // mass storage protocol, completely abstracting away the SD layer.
+        //
+        // When SFFDISK is unavailable, SD card registers (CID, CSD, SCR, etc.)
+        // can be read on Linux via sysfs: /sys/block/mmcblk0/device/cid etc.
+        DWORD sffdiskError = 0;
+        if (!QuerySD_Protocol(hVol.get(), drive.sdProtocolGUID, sffdiskError))
+        {
+            printf("\n");
+            printf("  NOTE: SD card register queries are unavailable for PhysicalDrive%lu.\n", drive.driveIndex);
+            printf("  IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL failed with Win32 error %lu (0x%08lX).\n",
+                sffdiskError, sffdiskError);
+            printf("\n");
+            printf("  The SFFDISK interface requires the Microsoft SD bus driver stack\n");
+            printf("  (sdbus.sys + sffdisk.sys), which is only loaded when the host\n");
+            printf("  controller presents as an SDA-standard-compliant SD host (BusTypeSd).\n");
+            printf("\n");
+            printf("  This card reader reports BusType = %s (%d), which means it uses\n",
+                BusTypeName(drive.device.busType), static_cast<int>(drive.device.busType));
+            if (drive.device.busType == BusTypeScsi)
+            {
+                printf("  a proprietary PCIe driver (e.g. Realtek RtsPer.sys) that presents\n");
+                printf("  the SD card as a SCSI device, bypassing the Microsoft SD stack.\n");
+            }
+            else if (drive.device.busType == BusTypeUsb)
+            {
+                printf("  the USB mass storage driver (usbstor.sys) which translates SD\n");
+                printf("  commands to SCSI, completely abstracting away the SD protocol layer.\n");
+            }
+            else
+            {
+                printf("  a driver that does not expose the SD protocol layer via SFFDISK.\n");
+            }
+            printf("\n");
+            printf("  SD card registers (CID, CSD, SCR, OCR, etc.) can instead be read\n");
+            printf("  on Linux via sysfs, for example:\n");
+            printf("    /sys/block/mmcblk0/device/cid\n");
+            printf("    /sys/block/mmcblk0/device/csd\n");
+            printf("    /sys/block/mmcblk0/device/scr\n");
+            printf("\n");
+            printf("  Skipping SD register queries. Raw disk imaging will still proceed.\n");
+            printf("\n");
+            continue;
+        }
+
         drive.sdProtocolIsSD = (memcmp(&drive.sdProtocolGUID, &GUID_SFF_PROTOCOL_SD, sizeof(GUID)) == 0);
         drive.sdProtocolIsMMC = (memcmp(&drive.sdProtocolGUID, &GUID_SFF_PROTOCOL_MMC, sizeof(GUID)) == 0);
 
