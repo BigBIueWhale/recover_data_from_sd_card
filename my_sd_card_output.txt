@@ -1,0 +1,367 @@
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+
+FATAL ERROR: IOCTL_STORAGE_QUERY_PROPERTY (DeviceTemperature header) failed on PhysicalDrive0
+  Win32 error code: 1 (0x00000001)
+  System message: Incorrect function.
+
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+Found 2 physical drive(s).
+Querying SD registers for PhysicalDrive1...
+
+FATAL ERROR: IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL failed
+  Win32 error code: 31 (0x0000001F)
+  System message: A device attached to the system is not functioning.
+
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+Found 2 physical drive(s).
+Querying SD registers for PhysicalDrive1...
+
+FATAL ERROR: IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL failed
+  Win32 error code: 31 (0x0000001F)
+  System message: A device attached to the system is not functioning.
+
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+Found 2 physical drive(s).
+Querying SD registers for PhysicalDrive1...
+
+FATAL ERROR: IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL failed
+  Win32 error code: 31 (0x0000001F)
+  System message: A device attached to the system is not functioning.
+
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>recover_data_from_sd_card.exe
+SD Card Data Extraction Tool for Windows
+==========================================
+
+Running as Administrator.
+
+Enumerating disk device interfaces via SetupDi...
+Found 2 disk device interface(s).
+Scanning physical drives...
+Found 2 physical drive(s).
+Querying SD registers for PhysicalDrive1...
+
+  NOTE: SD card register queries are unavailable for PhysicalDrive1.
+  IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL failed with Win32 error 31 (0x0000001F).
+
+  The SFFDISK interface requires the Microsoft SD bus driver stack
+  (sdbus.sys + sffdisk.sys), which is only loaded when the host
+  controller presents as an SDA-standard-compliant SD host (BusTypeSd).
+
+  This card reader reports BusType = SCSI (1), which means it uses
+  a proprietary PCIe driver (e.g. Realtek RtsPer.sys) that presents
+  the SD card as a SCSI device, bypassing the Microsoft SD stack.
+
+  SD card registers (CID, CSD, SCR, OCR, etc.) can instead be read
+  on Linux via sysfs, for example:
+    /sys/block/mmcblk0/device/cid
+    /sys/block/mmcblk0/device/csd
+    /sys/block/mmcblk0/device/scr
+
+  Skipping SD register queries. Raw disk imaging will still proceed.
+
+
+Removable drive letters (GetDriveType): (none)
+
+================================================================
+  PhysicalDrive0
+================================================================
+  Classification:     Fixed Disk
+
+  --- Storage Device Descriptor ---
+  Bus Type:           RAID (0x08)
+  Removable Media:    No
+  Device Type:        0x00
+  Vendor ID:          "AMD-RAID"
+  Product ID:         "Array 1"
+  Product Revision:   "9.3"
+  Serial Number:      "46f251c275245cbf"
+
+  --- Storage Adapter Descriptor ---
+  Adapter Bus Type:   RAID (0x08)
+  Max Transfer:       1048576 bytes
+  Alignment Mask:     0x00000001
+
+  --- Disk Geometry ---
+  Disk Size:          3.72 TB (4095498780672 bytes)
+  Media Type:         Fixed
+  Cylinders:          497916
+  Tracks/Cylinder:    255
+  Sectors/Track:      63
+  Bytes/Sector:       512
+
+  --- Device Properties (SetupDi) ---
+  Friendly Name:      "AMD-RAID Array 1  SCSI Disk Device"
+  Enumerator:         "SCSI"
+  Hardware IDs:       "SCSI\DiskAMD-RAID________Array_1_9.3_; SCSI\DiskAMD-RAID________Array_1_; SCSI\DiskAMD-RAID; SCSI\AMD-RAID________Array_1_9; AMD-RAID________Array_1_9; GenDisk"
+  Location:           "Bus Number 8, Target Id 2, LUN 0"
+  Device Path:        "\\?\scsi#disk&ven_amd-raid&prod_array_1_#6&26c90fe4&0&080200#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}"
+  Removal Policy:     ExpectNoRemoval (1)
+
+  --- Partition Layout ---
+  Partition Style:    GPT
+  GPT Disk ID:        {B49F387C-BCF0-4741-A653-36DBE384D055}
+
+  Partition #1:
+    Offset:           1.00 MB (1048576 bytes)
+    Size:             260.00 MB (272629760 bytes)
+    GPT Type:         {C12A7328-F81F-11D2-BA4B-00A0C93EC93B}
+    GPT Partition ID: {33A6DF87-1E6D-4818-A46B-4DE4FBA26E0D}
+    GPT Name:         "EFI system partition"
+
+  Partition #2:
+    Offset:           261.00 MB (273678336 bytes)
+    Size:             16.00 MB (16777216 bytes)
+    GPT Type:         {E3C9E316-0B5C-4DB8-817D-F92DF00215AE}
+    GPT Partition ID: {4C160D57-B9FB-43C4-AF27-C851F3D5DC46}
+    GPT Name:         "Microsoft reserved partition"
+
+  Partition #3:
+    Offset:           277.00 MB (290455552 bytes)
+    Size:             3.72 TB (4093791682048 bytes)
+    GPT Type:         {EBD0A0A2-B9E5-4433-87C0-68B6B72699C7}
+    GPT Partition ID: {37F35E36-3AF1-49CB-81A2-D573E9FAC9B8}
+    GPT Name:         "Basic data partition"
+
+  Partition #4:
+    Offset:           3.72 TB (4094082154496 bytes)
+    Size:             1.12 GB (1205862400 bytes)
+    GPT Type:         {DE94BBA4-06D1-4D40-A16A-BFD50179D6AC}
+    GPT Partition ID: {7D97B112-7E47-4C08-B70D-A0A28DDE0FF8}
+    GPT Name:         "Basic data partition"
+
+  Partition #5:
+    Offset:           3.72 TB (4095288016896 bytes)
+    Size:             200.00 MB (209715200 bytes)
+    GPT Type:         {DE94BBA4-06D1-4D40-A16A-BFD50179D6AC}
+    GPT Partition ID: {CAA6921B-AB22-43E2-B114-96CC3FDAE88B}
+    GPT Name:         "Basic data partition"
+
+  --- Mounted Volumes ---
+
+  Volume: \\?\Volume{37f35e36-3af1-49cb-81a2-d573e9fac9b8}\
+    Mount Point:      C:\
+    Label:            "OS"
+    File System:      NTFS
+    Volume Serial:    C01A-C857
+    Total Size:       3.72 TB (4093791678464 bytes)
+    Free Space:       1.57 TB (1723648315392 bytes)
+
+  Volume: \\?\Volume{7d97b112-7e47-4c08-b70d-a0a28dde0ff8}\
+    Label:            "RECOVERY"
+    File System:      NTFS
+    Volume Serial:    5EFA-972E
+
+  Volume: \\?\Volume{caa6921b-ab22-43e2-b114-96cc3fdae88b}\
+    Label:            "MYASUS"
+    File System:      FAT32
+    Volume Serial:    A010-4833
+
+  Volume: \\?\Volume{33a6df87-1e6d-4818-a46b-4de4fba26e0d}\
+    Label:            "SYSTEM"
+    File System:      FAT32
+    Volume Serial:    0817-A14F
+
+  --- Write Cache ---
+  Cache Type:          WriteBack (2)
+  Cache Enabled:       Enabled (2)
+  Cache Changeable:    NotChangeable (1)
+  Write-Through:       Supported (2)
+  Flush Supported:     Yes
+  User Power Protect:  No
+  NV Cache:            No
+
+  --- Access Alignment ---
+  Bytes/Logical Sector:    512
+  Bytes/Physical Sector:   4096
+  Sector Alignment Offset: 0
+  Cache Line Size:         0
+  Cache Alignment Offset:  0
+
+  --- Seek Penalty ---
+  Incurs Seek Penalty: No
+
+  --- TRIM Support ---
+  TRIM Enabled:        Yes
+
+  --- Device Power ---
+  Attention Supported:     No
+  Async Notification:      No
+  Idle Power Mgmt:         No
+  D3Cold Enabled:          No
+  D3Cold Supported:        No
+  No Verify During Idle:   No
+  Idle Timeout:            0 ms
+
+  --- Medium Product Type ---
+  Product Type:        Not indicated (0x00)
+
+  --- I/O Capability ---
+  LUN Max I/O Count:   127
+  Adapter Max I/O:     255
+
+  --- Media Types (Extended) ---
+  Device Type:         0x00000007
+  Media #1:
+    Media Type:        0x0000000C
+    Characteristics:   READ_WRITE | WRITE_PROTECTED
+    Cylinders:         497916
+    Tracks/Cylinder:   255
+    Sectors/Track:     63
+    Bytes/Sector:      512
+    Sides:             1
+
+================================================================
+  PhysicalDrive1  *** SD CARD CANDIDATE ***
+================================================================
+  Classification:     SD Card (card reader detected)
+
+  --- Storage Device Descriptor ---
+  Bus Type:           SCSI (0x01)
+  Removable Media:    Yes
+  Device Type:        0x00
+  Vendor ID:          "Realtek"
+  Product ID:         "PCIE Card Reader"
+  Product Revision:   "1.00"
+  Serial Number:      ""
+
+  --- Storage Adapter Descriptor ---
+  Adapter Bus Type:   SCSI (0x01)
+  Max Transfer:       1048576 bytes
+  Alignment Mask:     0x00000007
+
+  --- Disk Geometry ---
+  Disk Size:          58.60 GB (62921900032 bytes)
+  Media Type:         Removable
+  Cylinders:          7649
+  Tracks/Cylinder:    255
+  Sectors/Track:      63
+  Bytes/Sector:       512
+
+  --- Device Properties (SetupDi) ---
+  Friendly Name:      "SDXC Card"
+  Enumerator:         "PCISTOR"
+  Hardware IDs:       "RSPCIESTOR\GenDisk; GenDisk"
+  Device Path:        "\\?\pcistor#disk&ven_rsper&prod_rts5208lun0&rev_1.00#0000#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}"
+  Removal Policy:     ExpectOrderlyRemoval (2)
+
+  --- Partition Layout ---
+  Partition Style:    MBR
+  MBR Signature:      0x00000000
+
+  Partition #1:
+    Offset:           1.00 MB (1048576 bytes)
+    Size:             58.60 GB (62920834560 bytes)
+    MBR Type:         0x07 (NTFS/exFAT/HPFS)
+    Boot Indicator:   Inactive
+
+  --- Mounted Volumes ---
+
+  Volume: \\?\Volume{5cfde62b-f856-11ef-8220-c42360ea8c14}\
+    Label:            "android"
+    File System:      exFAT
+    Volume Serial:    69E7-BAF7
+
+  --- Write Cache ---
+  Cache Type:          Unknown (0)
+  Cache Enabled:       Disabled (1)
+  Cache Changeable:    NotChangeable (1)
+  Write-Through:       NotSupported (1)
+  Flush Supported:     No
+  User Power Protect:  No
+  NV Cache:            No
+
+  --- Access Alignment ---
+  Bytes/Logical Sector:    512
+  Bytes/Physical Sector:   512
+  Sector Alignment Offset: 0
+  Cache Line Size:         0
+  Cache Alignment Offset:  0
+
+  --- Media Types (Extended) ---
+  Device Type:         0x00000007
+  Media #1:
+    Media Type:        0x0000000B
+    Characteristics:   READ_WRITE | WRITE_PROTECTED
+    Cylinders:         7649
+    Tracks/Cylinder:   255
+    Sectors/Track:     63
+    Bytes/Sector:      512
+    Sides:             1
+
+================================================================
+  Summary
+================================================================
+  -> PhysicalDrive1: SD Card (card reader detected)
+  1 SD card candidate(s) found.
+
+================================================================
+  Raw Disk Imaging: PhysicalDrive1
+================================================================
+  Locked and dismounted 1 volume(s).
+  Output file:  sd_card_PhysicalDrive1_raw.img
+  Total size:   58.60 GB (62921900032 bytes)
+
+  Reading raw disk image...
+  Progress: 99.8% (62813896704 / 62921900032 bytes, 87.5 MB/s)
+  Completed: 62921900032 bytes read in 685.7 seconds (87.5 MB/s)
+
+Done.
+
+C:\Users\rzyro\source\repos\recover_data_from_sd_card\x64\Debug>
