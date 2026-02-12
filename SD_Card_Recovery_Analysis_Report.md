@@ -448,7 +448,119 @@ The industry-standard professional tool for this work is the **ACE Lab PC-3000 F
 - **Cost of service:** $300 – $1,500 per recovery, depending on the lab and complexity
 - **Many labs offer "no data, no fee" policies** — you only pay if they successfully recover your files
 
-### 11.4 Recommended Professional Labs
+### 11.4 Recommended Professional Labs — Israel
+
+The following Israeli data recovery labs are listed in order of confirmed applicability to this specific case (monolithic microSD chip-off recovery), based on publicly documented equipment and services.
+
+#### 1. Flash Recovery (Techno Data) — Herzliya
+
+- **Website:** [flash-recovery.co.il](https://flash-recovery.co.il/recovering-data/sd-microsd.html)
+- **Location:** Sokolov Street 10, Herzliya
+- **Phone:** 052-529-2863
+- **Email:** Flashrecovery15@gmail.com / info@flash-recovery.co.il
+- **WhatsApp:** Available
+
+**Why this lab is the top recommendation:** Flash Recovery is the only Israeli lab that **explicitly confirms on their website** that they use the **ACE Lab PC-3000 Flash** system with the **Spider Board Adapter** — the exact hardware designed for reading monolithic microSD NAND dies without desoldering. They also list the Monolite Module, BGA-48, BGA-152, and TSOP-56 adapters, and describe performing work under a microscope for solder points under 1 mm.
+
+| | |
+|---|---|
+| **Diagnostic** | Free |
+| **Logical damage** (corruption, deletion, formatting) | 300–800 NIS (~$80–$220 USD) |
+| **Physical damage** (undetected cards, broken controllers) | 800–1,800 NIS (~$220–$500 USD) |
+| **No-data-no-fee** | Yes — "Customers pay only for recovered data" |
+
+Note: Chip-off for a monolithic microSD may be quoted above the standard physical damage tier. Call to confirm pricing for this specific case.
+
+#### 2. UDATA — Tel Aviv
+
+- **Website:** [udata.co.il](https://xn--9dbbc4eb.co.il/)
+- **Location:** Ha'Me'apilim Street 33, Tel Aviv 6802833
+- **Phone:** 072-249-4570
+- **Email:** sos@udata.co.il
+- **Hours:** Sun–Thu 9:00–18:00, Fri 9:00–12:00
+
+UDATA confirms use of the **PC-3000 Flash** and provides the most transparent chip-off pricing of any Israeli lab, with a separate published price tier specifically for chip-off by capacity. ISO-standard clean room, 3 expert technicians, infrared soldering station for SMD work.
+
+| | |
+|---|---|
+| **Standard assessment** | 100 NIS |
+| **Urgent assessment** (4 hours) | 250 NIS |
+| **Logical damage** | 550–1,800 NIS |
+| **Physical damage** | 800–2,200 NIS |
+| **Chip-off (up to 64 GB)** | **1,800–2,500 NIS (~$500–$690 USD)** |
+| **Chip-off (64–250 GB)** | 2,500–3,800 NIS (~$690–$1,050 USD) |
+| **No-data-no-fee** | Yes |
+| **Claimed success rate** | 97% |
+
+#### 3. ZE-LAB — Haifa
+
+- **Website:** [zelab.co.il](https://zelab.co.il/data-recovery/flash)
+- **Location:** Nativ HaLulav 12, Haifa 2634227
+- **Phone:** 073-787-7730 / 058-727-2737
+- **Email:** [email protected]
+- **Hours:** Sun–Thu 09:00–21:00, Fri 09:00–13:00 (24/6 emergency availability)
+
+ZE-LAB explicitly lists **"Direct NAND chip reading (Chip-off)"** as a service on their website. Specific PC-3000 Flash equipment is not confirmed publicly but chip-off capability is directly stated.
+
+| | |
+|---|---|
+| **Diagnostic** | Free (up to 3 business days) |
+| **Logical errors / formatting** | 750–1,500 NIS |
+| **Chip-off NAND reading** | **1,500–4,500 NIS (~$415–$1,240 USD)** |
+| **Complex repairs requiring soldering** | 2,500+ NIS |
+| **No-data-no-fee** | Not confirmed on website — ask directly |
+
+#### 4. Tik Tac Technologies — Ramat Gan
+
+- **Website:** [tictac.co.il](https://www.tictac.co.il/) / [en.tictac.co.il](https://en.tictac.co.il/)
+- **Location:** 10 Hataas Street, Ground Floor, Ramat Gan 52512 (Diamond Exchange complex)
+- **Phone:** 03-613-1555
+- **Emergency mobile:** 052-287-7477
+- **Email:** sos@tictac.co.il
+- **Hours:** Sun–Thu 8:00–18:00
+
+Israel's largest data recovery lab (est. 1995), handling an estimated 50%+ of all Israeli data recovery cases. ISO 9001:2015 certified. Supplier to the Israeli Ministry of Defense, universities, and hospitals. Chip-off is not explicitly listed on their public website, but their scale, 97% success rate claim, and description of "unique technologies for recovering damaged memory cards" make it very likely they have the equipment. Quote-based pricing. **Call to confirm chip-off capability for monolithic microSD.**
+
+| | |
+|---|---|
+| **Evaluation fee** | 500 NIS for physically opened media |
+| **Recovery pricing** | Quote-based (not publicly listed) |
+| **No-data-no-fee** | Yes |
+| **Claimed success rate** | 97% |
+
+#### 5. Recoverli — Petah Tikva
+
+- **Website:** [recoverli.co.il](https://recoverli.co.il/)
+- **Location:** Aryeh Shnecor 3, Petah Tikva
+- **Phone:** 077-205-0000 / 050-740-0003
+- **Email:** [email protected]
+- **Hours:** 24/7
+
+Mentions chip-off on their website: *"In particularly complex cases, performs Chip-Off recovery — direct extraction of the memory chip and professional reading of it."* ISO 14644-1 Class 1005 clean room. 166+ Google reviews. Specific equipment not confirmed publicly.
+
+| | |
+|---|---|
+| **Diagnostic** | Free (deducted from recovery cost) |
+| **Recovery pricing** | Quote-based |
+| **No-data-no-fee** | Yes |
+| **Claimed success rate** | 97% |
+| **Turnaround** | 24–72 hours (standard cases) |
+
+#### 6. WIMD (Where Is My Data) — Tel Aviv area
+
+- **Website:** [wimd.co.il](https://www.wimd.co.il/)
+- **Phone:** 03-678-6568
+
+Mentions chip-off and JTAG/ISP techniques. Authorized supplier to the Israeli Ministry of Defense. Established early 2000s. Claims 99% success rate. Specific equipment and pricing not publicly listed — call for details.
+
+| | |
+|---|---|
+| **No-data-no-fee** | Yes |
+| **Claimed success rate** | 99% |
+
+### 11.4.1 Recommended Professional Labs — United States (International)
+
+For reference, the following US-based labs are well-documented for microSD chip-off and may be contacted for a second opinion or if Israeli labs cannot recover the data:
 
 | Lab | URL | Notes |
 |---|---|---|
