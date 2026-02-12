@@ -450,17 +450,103 @@ The industry-standard professional tool for this work is the **ACE Lab PC-3000 F
 
 ### 11.4 Recommended Professional Labs — Israel
 
-The following Israeli data recovery labs are listed in order of confirmed applicability to this specific case (monolithic microSD chip-off recovery), based on publicly documented equipment and services.
+The following Israeli data recovery labs are listed in order of overall confidence for this specific case (monolithic microSD chip-off recovery), based on verified equipment, independent reputation, certifications, and transparent pricing. Rankings account for both technical capability and verifiable trustworthiness.
 
-#### 1. Flash Recovery (Techno Data) — Herzliya
+#### 1. UDATA — Tel Aviv (Best Verified Chip-Off Capability)
+
+- **Website:** [udata.co.il](https://xn--9dbbc4eb.co.il/)
+- **Location:** Ha'Me'apilim Street 33, Tel Aviv 6802833
+- **Phone:** 072-249-4570
+- **Email:** sos@udata.co.il
+- **Hours:** Sun–Thu 9:00–18:00, Fri 9:00–12:00
+
+UDATA confirms use of the **PC-3000 Flash** and **Rusolut Visual NAND Reconstructor (VNR)** — the industry-standard tool for reconstructing data from raw NAND dumps, handling XOR unwhitening, ECC correction, and FTL reconstruction. This confirms they can perform the full chip-off pipeline (physical NAND read + data reconstruction), not just the physical read. ISO-standard clean room with security cameras and restricted access, 3 expert technicians, infrared soldering station for SMD work. NDA available for sensitive data.
+
+**Published pricing** (all prices **exclude 17% VAT** — their site explicitly states "כל המחירים במחירון שלנו - לא כוללים מע"מ"):
+
+| Service | Price (NIS, excl. VAT) |
+|---|---|
+| **Standard diagnostic** | 100 |
+| **Rush diagnostic** (4 hours) | 250 |
+| **Previously-opened device inspection** | 300 |
+| Logical damage (corruption, deletion) | 550–1,800 |
+| Post-format recovery | 350–1,500 |
+| Physical damage | 800–2,200 |
+| **Chip-off (up to 64 GB)** | **1,800–2,500** |
+| **Chip-off (64–250 GB)** | **2,500–4,500** |
+| SSD chip-off extraction | 3,500–9,500 |
+| **No-data-no-fee** | Yes |
+| **Claimed success rate** | 97% |
+
+**Estimated total cost for this specific card (HIKSEMI 64 GB microSD):**
+
+| Component | NIS |
+|---|---|
+| Diagnostic fee | 100 |
+| Chip-off recovery ("up to 64 GB" tier) | 1,800–2,500 |
+| **Subtotal before VAT** | **1,900–2,600** |
+| VAT (17%) | 323–442 |
+| **Total including VAT** | **2,223–3,042 NIS (~$609–$833 USD)** |
+
+**Pricing ambiguity to clarify by phone:** The card is exactly 64 GB. UDATA's tiers are "up to 64 GB" (1,800–2,500 NIS) and "64–250 GB" (2,500–4,500 NIS). If they interpret "up to" as strictly less than 64, the card would fall in the higher tier, pushing the worst case to **5,265 NIS including VAT (~$1,442 USD)**. This is the most important question to ask when calling.
+
+**Additional cost considerations:**
+- It is unclear whether the 100 NIS diagnostic fee is credited toward the recovery cost or added on top — ask when calling
+- Recovered data is delivered on a replacement drive/USB (not the original card) — unclear if the cost of this media is included
+- Drop-off at the Tel Aviv lab is free; nationwide pickup service is available but cost is not published
+- The "previously-opened device" fee (300 NIS) does not apply since this card has not been physically opened
+
+**Questions to ask when calling 072-249-4570:**
+1. Does a 64 GB card fall in the "up to 64 GB" or "64–250 GB" chip-off tier?
+2. Is the 100 NIS diagnostic fee credited toward the recovery cost if I proceed?
+3. Have you done monolithic microSD chip-off recovery before (not standard TSOP chip-off)?
+4. Is recovery media (USB drive for the recovered files) included in the price?
+5. What is the estimated timeline for chip-off recovery?
+6. If recovery fails, do I still owe the diagnostic fee?
+
+**Why #1:** Confirmed PC-3000 Flash + Rusolut VNR on-site (full chip-off pipeline), explicit chip-off pricing by capacity, documented clean room, multi-person team. The transparent pricing and dedicated flash recovery focus inspire the most confidence for this specific job.
+
+**For comparison with alternatives:**
+
+| Lab | Chip-off price for 64 GB (excl. VAT) | Total incl. 17% VAT |
+|---|---|---|
+| **UDATA (Tel Aviv)** | 1,800–2,500 NIS | 2,106–2,925 NIS (~$577–$801) |
+| **ZE-LAB (Haifa)** | 1,500–4,500 NIS | 1,755–5,265 NIS (~$481–$1,442) |
+| **Flash Recovery (Herzliya)** | 800–1,800 NIS (physical tier; chip-off may be higher) | 936–2,106 NIS (~$256–$577) |
+| **$300 Data Recovery (US)** | ~$300 USD flat (~1,095 NIS) | N/A (no Israeli VAT) + intl. shipping |
+
+#### 2. Tik Tac Technologies — Ramat Gan (Most Established Lab in Israel)
+
+- **Website:** [tictac.co.il](https://www.tictac.co.il/) / [en.tictac.co.il](https://en.tictac.co.il/)
+- **Location:** 10 Hataas Street, Ground Floor, Ramat Gan 52512 (Diamond Exchange complex)
+- **Phone:** 03-613-1555
+- **Emergency mobile:** 052-287-7477
+- **Email:** sos@tictac.co.il
+- **Hours:** Sun–Thu 8:00–18:00
+
+Israel's largest data recovery lab (est. 1995), handling an estimated 50%+ of all Israeli data recovery cases. **ISO 9001:2015 certified. Class 100 clean room.** Verified supplier to the Israeli Ministry of Defense, Prime Minister's Office, Israel Police, universities (including Tel Aviv University), and hospitals. Published case categories and recovery statistics. Extensive independently verifiable track record over 25+ years.
+
+Chip-off is not explicitly listed on their public website, but their scale, Class 100 clean room, and description of "unique technologies for recovering damaged memory cards considered advanced and leading in the world" make it very likely they have the equipment. **Call 03-613-1555 to confirm chip-off capability for monolithic microSD before visiting.**
+
+| | |
+|---|---|
+| **Evaluation fee** | 500 NIS for physically opened media |
+| **Recovery pricing** | Quote-based (not publicly listed) |
+| **No-data-no-fee** | Yes |
+| **Claimed success rate** | 97% |
+
+**Why #2:** By far the most credible and established lab in Israel. The only concern is that chip-off is not explicitly listed on their site — they may handle it in-house or may outsource it. A single phone call will clarify. If they confirm chip-off capability, they are arguably the safest choice overall due to their institutional track record and certifications.
+
+#### 3. Flash Recovery (Techno Data) — Herzliya (Confirmed Equipment, Unverified Track Record)
 
 - **Website:** [flash-recovery.co.il](https://flash-recovery.co.il/recovering-data/sd-microsd.html)
 - **Location:** Sokolov Street 10, Herzliya
-- **Phone:** 052-529-2863
+- **Phone:** 052-529-2863 (cellular)
 - **Email:** Flashrecovery15@gmail.com / info@flash-recovery.co.il
 - **WhatsApp:** Available
+- **Contact:** Yuri
 
-**Why this lab is the top recommendation:** Flash Recovery is the only Israeli lab that **explicitly confirms on their website** that they use the **ACE Lab PC-3000 Flash** system with the **Spider Board Adapter** — the exact hardware designed for reading monolithic microSD NAND dies without desoldering. They also list the Monolite Module, BGA-48, BGA-152, and TSOP-56 adapters, and describe performing work under a microscope for solder points under 1 mm.
+Flash Recovery is the only Israeli lab that **explicitly lists on their website** the **ACE Lab PC-3000 Flash** system with the **Spider Board Adapter**, **Monolith Module**, BGA-48, BGA-152, and TSOP-56 adapters, and describes performing work under a microscope for solder points under 1 mm. The technical descriptions on their SD card recovery page demonstrate genuine knowledge of NAND flash recovery methodology.
 
 | | |
 |---|---|
@@ -471,28 +557,19 @@ The following Israeli data recovery labs are listed in order of confirmed applic
 
 Note: Chip-off for a monolithic microSD may be quoted above the standard physical damage tier. Call to confirm pricing for this specific case.
 
-#### 2. UDATA — Tel Aviv
+**Why #3 despite listing the right equipment:** Independent due diligence revealed several concerns that prevent a higher ranking:
 
-- **Website:** [udata.co.il](https://xn--9dbbc4eb.co.il/)
-- **Location:** Ha'Me'apilim Street 33, Tel Aviv 6802833
-- **Phone:** 072-249-4570
-- **Email:** sos@udata.co.il
-- **Hours:** Sun–Thu 9:00–18:00, Fri 9:00–12:00
+- **Near-zero independent reviews** — only 2 reviews found (on Dapei Zahav, 5.0 stars). No Google Business reviews found. No social media presence (no Facebook, Instagram, or LinkedIn).
+- **Not listed in any industry directory** — absent from Fastbase (77 Israeli data recovery companies), Ensun (39 companies), B144 (Bezeq directory), Dolphin Data Lab, and Data Recovery Salon.
+- **No clean room documented** — despite advertising HDD head replacement (which requires a clean room), no clean room is mentioned anywhere on their site or in external listings.
+- **Small operation** — appears to be a one-person shop (cellular number only, Gmail as secondary email). Also provides VHS digitization and general computer repair services, suggesting a generalist rather than a specialist.
+- **Website padded with generic SEO content** — dozens of unrelated consumer electronics articles (TV rankings, phone reviews) that appear template-generated.
+- **Unverifiable institutional claims** — claims to be an "authorized supplier to Tel Aviv University" but this could not be independently confirmed.
+- **No published case studies** — zero documented recovery examples.
 
-UDATA confirms use of the **PC-3000 Flash** and provides the most transparent chip-off pricing of any Israeli lab, with a separate published price tier specifically for chip-off by capacity. ISO-standard clean room, 3 expert technicians, infrared soldering station for SMD work.
+**Recommendation:** The free diagnostic makes this low-risk to try. When calling, ask directly: *"Is the PC-3000 Flash on-site right now? How many monolithic microSD chip-off recoveries have you completed?"* The specificity of the answer will indicate whether the equipment listing reflects current, active capability or aspirational marketing.
 
-| | |
-|---|---|
-| **Standard assessment** | 100 NIS |
-| **Urgent assessment** (4 hours) | 250 NIS |
-| **Logical damage** | 550–1,800 NIS |
-| **Physical damage** | 800–2,200 NIS |
-| **Chip-off (up to 64 GB)** | **1,800–2,500 NIS (~$500–$690 USD)** |
-| **Chip-off (64–250 GB)** | 2,500–3,800 NIS (~$690–$1,050 USD) |
-| **No-data-no-fee** | Yes |
-| **Claimed success rate** | 97% |
-
-#### 3. ZE-LAB — Haifa
+#### 4. ZE-LAB — Haifa
 
 - **Website:** [zelab.co.il](https://zelab.co.il/data-recovery/flash)
 - **Location:** Nativ HaLulav 12, Haifa 2634227
@@ -510,24 +587,6 @@ ZE-LAB explicitly lists **"Direct NAND chip reading (Chip-off)"** as a service o
 | **Complex repairs requiring soldering** | 2,500+ NIS |
 | **No-data-no-fee** | Not confirmed on website — ask directly |
 
-#### 4. Tik Tac Technologies — Ramat Gan
-
-- **Website:** [tictac.co.il](https://www.tictac.co.il/) / [en.tictac.co.il](https://en.tictac.co.il/)
-- **Location:** 10 Hataas Street, Ground Floor, Ramat Gan 52512 (Diamond Exchange complex)
-- **Phone:** 03-613-1555
-- **Emergency mobile:** 052-287-7477
-- **Email:** sos@tictac.co.il
-- **Hours:** Sun–Thu 8:00–18:00
-
-Israel's largest data recovery lab (est. 1995), handling an estimated 50%+ of all Israeli data recovery cases. ISO 9001:2015 certified. Supplier to the Israeli Ministry of Defense, universities, and hospitals. Chip-off is not explicitly listed on their public website, but their scale, 97% success rate claim, and description of "unique technologies for recovering damaged memory cards" make it very likely they have the equipment. Quote-based pricing. **Call to confirm chip-off capability for monolithic microSD.**
-
-| | |
-|---|---|
-| **Evaluation fee** | 500 NIS for physically opened media |
-| **Recovery pricing** | Quote-based (not publicly listed) |
-| **No-data-no-fee** | Yes |
-| **Claimed success rate** | 97% |
-
 #### 5. Recoverli — Petah Tikva
 
 - **Website:** [recoverli.co.il](https://recoverli.co.il/)
@@ -536,7 +595,7 @@ Israel's largest data recovery lab (est. 1995), handling an estimated 50%+ of al
 - **Email:** [email protected]
 - **Hours:** 24/7
 
-Mentions chip-off on their website: *"In particularly complex cases, performs Chip-Off recovery — direct extraction of the memory chip and professional reading of it."* ISO 14644-1 Class 1005 clean room. 166+ Google reviews. Specific equipment not confirmed publicly.
+Mentions chip-off on their website: *"In particularly complex cases, performs Chip-Off recovery — direct extraction of the memory chip and professional reading of it."* ISO 14644-1 Class 1005 clean room. 166+ Google reviews — the strongest independent review presence of any lab on this list. Specific equipment not confirmed publicly.
 
 | | |
 |---|---|
@@ -557,6 +616,13 @@ Mentions chip-off and JTAG/ISP techniques. Authorized supplier to the Israeli Mi
 |---|---|
 | **No-data-no-fee** | Yes |
 | **Claimed success rate** | 99% |
+
+#### Suggested approach
+
+1. **Call UDATA first** (072-249-4570) — confirm they can do chip-off on a HIKSEMI monolithic microSD, get a firm quote within their published 1,800–2,500 NIS range for 64 GB.
+2. **Call Tik Tac second** (03-613-1555) — ask if they do monolithic microSD chip-off in-house. If yes, get a quote for comparison.
+3. **If both decline or quote too high**, try Flash Recovery's free diagnostic (052-529-2863) — ask the questions above about on-site equipment and monolithic recovery experience.
+4. Take the card to whichever lab gives the most specific, confident answer about monolithic microSD chip-off experience. Vague answers like "we'll try" are a red flag for this type of recovery.
 
 ### 11.4.1 Recommended Professional Labs — United States (International)
 
